@@ -1,4 +1,4 @@
-# Matrix Multiplication — Code and Explanations (Parts A–C)
+# Matrix Multiplication — Sequential, OpenMP, MPI (Parts A–C)
 
 All four programs compute C = A × B for 4000×4000 matrices where every element of A and B is 1.0, so every element of C should equal 4000.00. This section shows the actual code used and explains what each part is doing.
 
