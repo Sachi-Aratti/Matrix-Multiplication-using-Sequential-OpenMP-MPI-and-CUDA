@@ -208,4 +208,10 @@ int main(int argc, char *argv[])
 - This is why MPI is slower than OpenMP here despite using the same number of workers (4): scattering `A`, broadcasting a 128 MB copy of `B` to every rank, and gathering `C` all cost real network/memory-copy time that OpenMP's shared-memory threads never pay.
 
 ---
+Conclusion — when to use which
 
+Sequential is the right choice when the problem is small enough that the overhead of setting up threads or processes exceeds the time saved, or when you're prototyping/debugging — you want a known-correct baseline before adding any parallel complexity. It's also the natural choice when the computation has inherent step-by-step dependencies (each result depends on the previous one) that can't be split up at all.
+
+OpenMP is the right choice when the entire problem fits on a single machine and the work can be divided into independent chunks — which is most CPU-bound, loop-heavy computation. Because all threads share memory directly, there's almost no overhead in getting workers the data they need. This experiment's numbers make the case directly: OpenMP hit 7.92× speedup with zero communication cost, so whenever a single machine's cores are enough, OpenMP will almost always outperform MPI for the same worker count.
+
+MPI is the right choice specifically when the problem is too big for one machine — either the dataset doesn't fit in one machine's RAM, or you need more total compute than one machine's cores can provide. It should not be reached for just because you have multiple machines available; this experiment showed MPI (2.63×) underperforming OpenMP (7.92×) with the same number of workers, purely because of scatter/broadcast/gather overhead across separate memory spaces. That overhead only pays off once the problem is large enough that no single machine could do the job at all — at that point, MPI's ability to pool RAM and cores across many machines outweighs the communication cost it introduces.
